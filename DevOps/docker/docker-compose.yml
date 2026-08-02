@@ -1,16 +1,73 @@
 services:
-
   backend:
     build:
       context: ../..
       dockerfile: DevOps/docker/Dockerfile.backend
+
+    ports:
+      - "4000:4000"
+
+    env_file:
+      - ../../tripper_backend_api/.env
+
+  
+
+    restart: unless-stopped
+
+    networks:
+      - hotel-network
 
   frontend:
     build:
       context: ../..
       dockerfile: DevOps/docker/Dockerfile.react
 
+    ports:
+      - "3000:80"
+
+    depends_on:
+      - backend
+
+    restart: unless-stopped
+
+    networks:
+      - hotel-network
+
   dashboard:
     build:
       context: ../..
       dockerfile: DevOps/docker/Dockerfile.angular
+
+    ports:
+      - "4200:80"
+
+    depends_on:
+      - backend
+
+    restart: unless-stopped
+
+    networks:
+      - hotel-network
+
+  nginx:
+    build:
+      context: ../nginx
+      dockerfile: Dockerfile.nginx
+
+    container_name: tripper-nginx
+
+    ports:
+      - "80:80"
+
+    depends_on:
+      - frontend
+      - dashboard
+      - backend
+
+    restart: unless-stopped
+
+    networks:
+      - hotel-network
+
+networks:
+  hotel-network:
